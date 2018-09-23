@@ -1,68 +1,59 @@
-# Meet Safe and Unsafe
+# Safe와 Unsafe의 만남
 
 ![safe and unsafe](img/safeandunsafe.svg)
 
-It would be great to not have to worry about low-level implementation details.
-Who could possibly care how much space the empty tuple occupies? Sadly, it
-sometimes matters and we need to worry about it. The most common reason
-developers start to care about implementation details is performance, but more
-importantly, these details can become a matter of correctness when interfacing
-directly with hardware, operating systems, or other languages.
+저수준 구현의 세부사항을 걱정할 필요가 없으면 아주 좋을 겁니다.
+빈 튜플이 공간을 얼마나 차지하는지 누가 신경쓸까요? 슬프게도, 이건
+때때로 중요하고 걱정해야 할 때도 있습니다. 개발자들이 세부 구현을 신경쓰기
+시작하는 가장 흔한 이유는 성능이지만, 더 중요한 건 세부 구현이 하드웨어나 운영체제,
+다른 언어와 직접 소통할 때 무결성의 문제가 될 수 있다는 점입니다.
 
-When implementation details start to matter in a safe programming language,
-programmers usually have three options:
+세부 구현이 안전한 프로그래밍 언어에서 중요해질 때 프로그래머는 대개 세 가지 선택지를 가집니다.
 
-* fiddle with the code to encourage the compiler/runtime to perform an optimization
-* adopt a more unidiomatic or cumbersome design to get the desired implementation
-* rewrite the implementation in a language that lets you deal with those details
+* 컴파일러나 런타임 환경에서 최적화를 수행할 수 있도록 코드를 변경하기
+* 관용적이지 않거나 복잡한 디자인으로 원하는 구현을 얻기
+* 그런 세부사항을 다룰 수 있는 언어를 사용해 재구현하기
 
-For that last option, the language programmers tend to use is *C*. This is often
-necessary to interface with systems that only declare a C interface.
+마지막 선택지에서 프로그래머들이 주로 쓰는 언어는 *C*입니다. C 인터페이스만 선언한 시스템과 소통하려면 심심치 않게 필요합니다.
 
-Unfortunately, C is incredibly unsafe to use (sometimes for good reason),
-and this unsafety is magnified when trying to interoperate with another
-language. Care must be taken to ensure C and the other language agree on
-what's happening, and that they don't step on each other's toes.
+그럼에도, C는 사용하기 매우 안전하지 않고 (때때로 좋은 이유에서지만),
+이 위험성은 다른 언어와 소통하려할 때 증폭됩니다. C와 다른 언어가 서로
+무슨 일이 일어날지 납득하고, 서로의 방해를 하지 않을지 확신하는데 신경써야 합니다.
 
-So what does this have to do with Rust?
+그래서 Rust하고는 뭘 해야 할까요?
 
-Well, unlike C, Rust is a safe programming language.
+C와는 달리, Rust는 안전한 프로그래밍 언어입니다.
 
-But, like C, Rust is an unsafe programming language.
+하지만 C처럼 Rust는 안전하지 않은 프로그래밍 언어입니다.
 
-More accurately, Rust *contains* both a safe and unsafe programming language.
+더 정확히 말하자면, Rust는 안전하기도 안전하지 않기도 한 프로그래밍 언어를 둘 다 *포함합니다*.
 
-Rust can be thought of as a combination of two programming languages: *Safe
-Rust* and *Unsafe Rust*. Conveniently, these names mean exactly what they say:
-Safe Rust is Safe. Unsafe Rust is, well, not. In fact, Unsafe Rust lets us
-do some *really* unsafe things. Things the Rust authors will implore you not to
-do, but we'll do anyway.
+Rust는 *안전한 Rust*와 *안전하지 않은 Rust*라는 두 프로그래밍 언어의 조합으로
+생각할 수 있습니다. 편리하게도 이 이름은 의미하는 걸 정확히 나타냅니다.
+안전한 Rust는 안전합니다. 안전하지 않은 Rust는, 음, 그렇지 않겠죠. 사실
+안전하지 않은 Rust는 *정말로* 위험한 행위를 허용합니다. Rust 개발자들이
+하지 말라고 간청하지만, 우리는 어찌됐건 할 그런 것들 말이죠.
 
-Safe Rust is the *true* Rust programming language. If all you do is write Safe
-Rust, you will never have to worry about type-safety or memory-safety. You will
-never endure a dangling pointer, a use-after-free, or any other kind of
-Undefined Behavior.
+안전한 Rust는 *진짜* Rust 프로그래밍 언어입니다. 만약 우리가 모든 걸 
+안전한 Rust로 짠다면, 타입 안전성이나 메모리 안전성을 걱정할 이유가 없습니다. 
+잊혀진 포인터나, 해제 후 재사용, 기타 모든 약속되지 않은 동작으로 고통받는
+일이 사라질 겁니다.
 
-The standard library also gives you enough utilities out of the box that you'll
-be able to write high-performance applications and libraries in pure idiomatic
-Safe Rust.
+표준 라이브러리 또한 고성능 응용 프로그램과 라이브러리를 순수하고 관용적인 안전한 러스트로 작성하는데 충분한 도구를 제공합니다. 
 
-But maybe you want to talk to another language. Maybe you're writing a
-low-level abstraction not exposed by the standard library. Maybe you're
-*writing* the standard library (which is written entirely in Rust). Maybe you
-need to do something the type-system doesn't understand and just *frob some dang
-bits*. Maybe you need Unsafe Rust.
+그럼에도 다른 언어와 소통하고 싶을 수 있습니다. 표준 라이브러리에 드러나지 않은
+저수준 추상화를 작성할 수도 있습니다. (Rust로 전부 짠) 표준 라이브러리를 *짜는*
+중일 수도 있습니다. 타입 시스템이 이해하지 못하는 뭔가를 해야해서 혈압이
+올랐을 수 있습니다. 안전하지 않은 Rust가 필요한 겁니다.
 
-Unsafe Rust is exactly like Safe Rust with all the same rules and semantics.
-It just lets you do some *extra* things that are Definitely Not Safe
-(which we will define in the next section).
+안전하지 않은 Rust는 안전한 Rust와 규칙과 의미론에서 비슷합니다.
+안전하지 않은 Rust는 결코 안전하지 않은 (다음 장에서 배울)
+*몇 가지* 작업들을 허용합니다.
 
-The value of this separation is that we gain the benefits of using an unsafe
-language like C — low level control over implementation details — without most
-of the problems that come with trying to integrate it with a completely
-different safe language.
+이 분리가 좋은 점은 C같은 안전하지 않은 언어를 쓰는 장점을 누릴 수 있다는 겁니다.
+세부 구현을 통한 저수준 제어라는 장점을 완전히 다른 안전한 언어와 통합하는데 드는
+수고나 문제없이 말이죠.
 
-There are still some problems — most notably, we must become aware of properties
-that the type system assumes and audit them in any code that interacts with
-Unsafe Rust. That's the purpose of this book: to teach you about these assumptions
-and how to manage them.
+아직 문제는 남아있습니다. 대표적으로 우리는 타입 시스템이 무엇을 기대하는지 숙지하고
+안전하지 않은 Rust와 소통하는 모든 코드에서 그 기대를 깨지 말아야 합니다. 그게
+이 책의 목적입니다. 이 기대가 무엇이고 어떻게 다루는지를 가르치는 것 말이죠.
