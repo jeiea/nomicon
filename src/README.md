@@ -1,26 +1,23 @@
-# The Rustonomicon
+# 러스트노미콘(The Rustonomicon)
 
-#### The Dark Arts of Unsafe Rust
+#### 언세이프 러스트 흑마법
 
-> THE KNOWLEDGE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF UNLEASHING INDESCRIBABLE HORRORS THAT
-SHATTER YOUR PSYCHE AND SET YOUR MIND ADRIFT IN THE UNKNOWABLY INFINITE COSMOS.
+> 이 지식은 멘탈을 조각내고 정신을 무한한 우주로 날려버릴 형언할 수 없는 공포
+등등에 대해 명시적, 암시적인 어떤 보증도 없이 이대로 제공됩니다.
 
-The Rustonomicon digs into all the awful details that you need to understand when
-writing Unsafe Rust programs.
+러스트노미콘은 올바른 언세이프 러스트 프로그램을 짜기 위해 필요한 모든 소름끼치는
+세부사항을 다룹니다.
 
-Should you wish a long and happy career of writing Rust programs, you should
-turn back now and forget you ever saw this book. It is not necessary. However
-if you intend to write unsafe code — or just want to dig into the guts of the
-language — this book contains lots of useful information.
+길고 행복한 러스트 프로그래밍 경력을 원한다면, 당장 돌아가서 이 책을 봤다는 걸
+잊으면 됩니다. 이 책은 필요하지 않습니다. 하지만 언세이프 코드를 짜려 한다면,
+혹은 언어의 내부를 보고 싶다면, 이 책은 유용한 정보를 가지고 있습니다.
 
-Unlike *[The Rust Programming Language][trpl]*, we will be assuming considerable
-prior knowledge. In particular, you should be comfortable with basic systems
-programming and Rust. If you don't feel comfortable with these topics, you
-should consider reading [The Book][trpl] first. That said, we won't assume you
-have read it, and we will take care to occasionally give a refresher on the
-basics where appropriate. You can skip straight to this book if you want;
-just know that we won't be explaining everything from the ground up.
+[*러스트 프로그래밍 언어*][trpl]와 달리 독자가 선행 지식이 상당히 있다고
+전제합니다. 특히 기본적인 시스템 프로그래밍과 러스트에 익숙해야 합니다.
+만약 그렇지 않다면 [러스트 프로그래밍 언어][trpl]를 먼저 읽어보는 걸 권합니다. 그렇지만
+독자가 꼭 그 책을 읽었다고 생각진 않고, 필요하면 기본 지식도 환기할 겁니다.
+러스트 프로그래밍 언어를 건너뛰어도 상관없지만, 바닥부터 모두 설명하지는
+않을 거란 것만 알아두세요.
 
 This book exists primarily as a high-level companion to [The Reference][ref].
 Where The Reference exists to detail the syntax and semantics of every part of

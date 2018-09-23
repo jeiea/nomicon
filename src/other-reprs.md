@@ -1,86 +1,81 @@
-# Alternative representations
+# 대체 레이아웃
 
-Rust allows you to specify alternative data layout strategies from the default.
-There's also the [reference].
+러스트에서 다른 데이터 레이아웃 방식을 지정할 수 있습니다. [참고 문서][reference]
+도 있습니다.
 
 
 
 
 # repr(C)
 
-This is the most important `repr`. It has fairly simple intent: do what C does.
-The order, size, and alignment of fields is exactly what you would expect from C
-or C++. Any type you expect to pass through an FFI boundary should have
-`repr(C)`, as C is the lingua-franca of the programming world. This is also
-necessary to soundly do more elaborate tricks with data layout such as
-reinterpreting values as a different type.
+이건 가장 중요한 `repr`입니다. C가 하는대로라는 무척 단순한 의도입니다.
+순서, 크기, 필드 정렬이 C나 C++에서 기대했던 대로 짜일 것입니다.
+C가 프로그래밍 언어의 사실상 표준이기에 FFI 경계 너머로 넘길 모든 타입은
+반드시 `repr(C)`를 가져야 합니다. 구조체를 다른 타입으로 재해석하는 트릭을
+제대로 사용하는 데도 필요합니다.
 
-We strongly recommend using [rust-bindgen][] and/or [cbindgen][] to manage your FFI
-boundaries for you. The Rust team works closely with those projects to ensure
-that they work robustly and are compatible with current and future guarantees
-about type layouts and reprs.
+FFI 경계를 관리하기 위해 [rust-bindgen][]이나 [cbindgen][]을 쓸 것을 강권합니다.
+러스트 팀은 이 프로젝트들이 견고하게, 현재와 미래에 타입 레이아웃과 repr에 대한
+전제를 호환하도록 밀접하게 작업하고 있습니다.
 
-The interaction of `repr(C)` with Rust's more exotic data layout features must be
-kept in mind. Due to its dual purpose as "for FFI" and "for layout control",
-`repr(C)` can be applied to types that will be nonsensical or problematic if
-passed through the FFI boundary.
+하지만 `repr(C)`로 러스트의 더 외부의 데이터 레이아웃 기능을 다루는 데엔
+명심할 것이 있습니다. FFI와 레이아웃 제어를 위해서라는 목적의 양면성 때문에,
+`repr(C)`는 FFI 경계 너머로 넘기면 말이 안 되거나 문제가 생기는 타입에
+적용될 수 있습니다.
 
-* ZSTs are still zero-sized, even though this is not a standard behavior in
-C, and is explicitly contrary to the behavior of an empty type in C++, which
-says they should still consume a byte of space.
+* ZST는 repr(C)를 적용하더라도 크기를 가지지 않습니다. 비록 C의
+  표준 동작과 일치하지 않고, C++의 빈 타입이 1 바이트를 차지해야
+  한다는 것에 모순되더라도 말입니다.
 
-* DST pointers (wide pointers) and tuples are not a concept
-  in C, and as such are never FFI-safe.
+* DST 포인터 (와이드 포인터), 터플은 C에 있는 개념이
+  아니기에 FFI에서 안전할 수 없습니다.
 
-* Enums with fields also aren't a concept in C or C++, but a valid bridging
-  of the types [is defined][really-tagged].
+* 필드를 가진 열거형 또한 C나 C++에 없지만, 타당한 타입 변환이
+  [정의되었습니다][really-tagged]
 
-* If `T` is an [FFI-safe non-nullable pointer
-  type](ffi.html#the-nullable-pointer-optimization),
-  `Option<T>` is guaranteed to have the same layout and ABI as `T` and is
-  therefore also FFI-safe. As of this writing, this covers `&`, `&mut`,
-  and function pointers, all of which can never be null.
+* `T`가 [FFI 안전한 널이 불가능한 포인터 타입](ffi.html#the-nullable-pointer-optimization)이면,
+  `Option<T>`는 `T`와 같은 레이아웃과 ABI를 가지고 그 결과 FFI 안전합니다.
+  이 글이 쓰여지는 시점 기준으로 이 규칙은 널이 될 수 없는 `&`, `&mut`과
+  함수 포인터에 적용됩니다.
 
-* Tuple structs are like structs with regards to `repr(C)`, as the only
-  difference from a struct is that the fields aren’t named.
+* `repr(C)`에서 터플 구조체는 일반 구조체와 같습니다.
+  유일한 차이점은 필드에 이름이 없다는 겁니다.
 
-* `repr(C)` is equivalent to one of `repr(u*)` (see the next section) for
-fieldless enums. The chosen size is the default enum size for the target platform's C
-application binary interface (ABI). Note that enum representation in C is implementation
-defined, so this is really a "best guess". In particular, this may be incorrect
-when the C code of interest is compiled with certain flags.
+* `repr(C)`는 아래에서 소개할 `repr(u*)`의 한 종류와 필드없는 열거형 측면에서
+  동일합니다. 선택하는 크기는 대상 플랫폼 C ABI의 기본 열거형 크기가 됩니다.
+  C의 열거형 표현은 구현에 따라 다르기 때문에 "최선의 추측"을 할 뿐입니다.
+  특히, 목표로 한 C코드가 특별한 플래그로 컴파일 되었을 때 부정확해질 수
+  있습니다.
 
-* Fieldless enums with `repr(C)` or `repr(u*)` still may not be set to an
-integer value without a corresponding variant, even though this is
-permitted behavior in C or C++. It is undefined behavior to (unsafely)
-construct an instance of an enum that does not match one of its
-variants. (This allows exhaustive matches to continue to be written and
-compiled as normal.)
-
+* C나 C++에선 가능했지만 `repr(C)`나 `repr(u*)` 지정을 한 필드없는
+  열거형은 정의하지 않은 정수 값으로 설정할 수 없습니다. 안전하지 않은
+  코드로 정의하지 않은 정수 값을 사용해 열거형 인스턴스를 만드는 것은
+  미정의 동작입니다. (이 경우 전수 조사 매칭을 여전히 작성할
+  수 있고 컴파일도 정상적으로 됩니다.)
 
 
 # repr(transparent)
 
-This can only be used on structs with a single non-zero-sized field (there may
-be additional zero-sized fields). The effect is that the layout and ABI of the
-whole struct is guaranteed to be the same as that one field.
+이 어트리뷰트는 크기가 0이 아닌 필드 하나만을 가진 구조체에만 쓸 수 있습니다
+(크기가 0인 필드가 추가로 있어도 됩니다). 효과는 구조체 전체 레이아웃과 ABI가
+그 필드 하나와 동일해지는 것입니다.
 
-The goal is to make it possible to transmute between the single field and the
-struct. An example of that is [`UnsafeCell`], which can be transmuted into
-the type it wraps.
+이걸 쓰는 이유는 단일 필드와 구조체 간 변환을 가능하게 하기 위함입니다.
+한 예로  [`UnsafeCell`]은 그 타입이 감싼 타입으로 바꿀 수 있습니다.
 
-Also, passing the struct through FFI where the inner field type is expected on
-the other side is guaranteed to work. In particular, this is necessary for `struct
-Foo(f32)` to always have the same ABI as `f32`.
 
-More details are in the [RFC][rfc-transparent].
+또한 해당 구조체를 필드 안의 타입을 요구하는 FFI 너머로 넘기는 것도
+정상 동작이 보장됩니다. 특히 `struct Foo(f32)`가 `f32`와 같은 ABI를
+무조건 가지게 할 때 필요합니다.
+
+자세한 내용은 [RFC][rfc-transparent]를 참고하세요.
 
 
 
 # repr(u*), repr(i*)
 
-These specify the size to make a fieldless enum. If the discriminant overflows
-the integer it has to fit in, it will produce a compile-time error. You can
+이 어트리뷰트들은 필드 없는 열거형의 크기를 지정합니다. 열거형의 구분 태그가
+지정한 수를 벗어나면, 컴파일 에러를 일으킵니다.
 manually ask Rust to allow this by setting the overflowing element to explicitly
 be 0. However Rust will not allow you to create an enum where two variants have
 the same discriminant.
