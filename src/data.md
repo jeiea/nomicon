@@ -1,16 +1,11 @@
-# Data Representation in Rust
+# Rust의 데이터 표현
 
-Low-level programming cares a lot about data layout. It's a big deal. It also
-pervasively influences the rest of the language, so we're going to start by
-digging into how data is represented in Rust.
+저수준 프로그래밍에선 데이터 레이아웃에 신경씁니다. 중요한 문제죠.
+또한 언어의 나머지 부분에 광범위하게 영향을 끼치기도 하니, Rust가
+데이터를 어떻게 표현하는지부터 살펴봅시다.
 
-This chapter is ideally in agreement with, and rendered redundant by,
-the [Type Layout section of the Reference][ref-type-layout]. When this
-book was first written, the reference was in complete disrepair, and the
-Rustonomicon was attempting to serve as a partial replacement for the reference.
-This is no longer the case, so this whole chapter can ideally be deleted.
+이 장은 [러스트 레퍼런스의 타입 레이아웃 장][ref-type-layout]과 거의 일치하고, 중복으로 작성되었습니다. 이 책을 처음 쓸 땐 레퍼런스가 처참했고, 러스트노미콘은 레퍼런스를 일부 대체하려고도 했습니다. 이젠 그럴 계획도 없고, 그러므로 이 장은 삭제해도 무방합니다.
 
-We'll keep this chapter around for a bit longer, but ideally you should be
-contributing any new facts or improvements to the Reference instead.
+우린 이 장을 조금 더 보존하겠지만, 새로운 사실이나 개선은 레퍼런스에 추가해야 합니다.
 
 [ref-type-layout]: ../reference/type-layout.html
