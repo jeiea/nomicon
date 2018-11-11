@@ -1,35 +1,33 @@
 # repr(Rust)
 
-First and foremost, all types have an alignment specified in bytes. The
-alignment of a type specifies what addresses are valid to store the value at. A
-value with alignment `n` must only be stored at an address that is a multiple of
-`n`. So alignment 2 means you must be stored at an even address, and 1 means
-that you can be stored anywhere. Alignment is at least 1, and always a power
-of 2.
+먼저, 모든 타입은 바이트로 나타낸 정렬 값을 가지고 있습니다. 타입의
+정렬 값은 어떤 주소에 그 타입의 값을 저장해야 문제가 없는지 나타냅니다.
+`n` 정렬 값을 가진 값은 `n`의 배수 주소에만 저장해야 합니다.
+즉 2 정렬 값은 값을 짝수 주소에만 저장해야 하는 걸 의미하고, 1은 아무 데나
+저장해도 됨을 의미합니다. 정렬 값은 최소 1 이상이고, 항상 2의
+거듭제곱이어야 합니다.
 
-Primitives are usually aligned to their size, although this is
-platform-specific behavior. For example, on x86 `u64` and `f64` are often
-aligned to 4 bytes (32 bits).
+플랫폼에 따라 다르겠지만, 보통 기본 타입은 그 자신의 크기에 맞게
+정렬됩니다. 예를 들어 x86에서 `u64`와 `f64`는 보통 4바이트로 정렬됩니다.
 
-A type's size must always be a multiple of its alignment. This ensures that an
-array of that type may always be indexed by offsetting by a multiple of its
-size. Note that the size and alignment of a type may not be known
-statically in the case of [dynamically sized types][dst].
+타입 크기는 항상 그 정렬 값의 배수여야 합니다. 이것으로 그 타입의 배열이 있을 때
+그 타입 크기의 배수만큼 이동해서 원소를 참조 가능하도록 보장합니다.
+[동적 크기 타입][dst]의 경우 타입 크기와 정렬 값을 정적으로 알 수 없다는 걸
+알아두세요.
 
-Rust gives you the following ways to lay out composite data:
+Rust는 아래 방법으로 여러 데이터를 배치합니다.
 
-* structs (named product types)
-* tuples (anonymous product types)
-* arrays (homogeneous product types)
-* enums (named sum types -- tagged unions)
-* unions (untagged unions)
+* 구조체 (named product types)
+* 튜플 (anonymous product types)
+* 배열 (homogeneous product types)
+* 열거형 (named sum types -- tagged unions)
+* 공용체 (untagged unions)
 
-An enum is said to be *field-less* if none of its variants have associated data.
+열거형은 데이터를 가진 원소가 하나도 없으면 *field-less*라고 부릅니다.
 
-By default, composite structures have an alignment equal to the maximum
-of their fields' alignments. Rust will consequently insert padding where
-necessary to ensure that all fields are properly aligned and that the overall
-type's size is a multiple of its alignment. For instance:
+구조체는 개별 필드 정렬 값의 최댓값을 정렬의 기본 값으로 가집니다. Rust는
+모든 필드가 잘 정렬되고 전체 타입 크기가 정렬 값의 배수가 되도록
+패딩을 삽입합니다. 예를 들면
 
 ```rust
 struct A {
@@ -39,21 +37,20 @@ struct A {
 }
 ```
 
-will be 32-bit aligned on a target that aligns these primitives to their
-respective sizes. The whole struct will therefore have a size that is a multiple
-of 32-bits. It may become:
+위 구조체는 기본 타입을 그 자신의 크기로 정렬하는 타겟에서 32비트로
+정렬할 겁니다. 즉 전체 구조체 크기는 32비트의 배수가 됩니다. 아마 아래나
 
 ```rust
 struct A {
     a: u8,
-    _pad1: [u8; 3], // to align `b`
+    _pad1: [u8; 3], // `b` 정렬을 위함
     b: u32,
     c: u16,
-    _pad2: [u8; 2], // to make overall size multiple of 4
+    _pad2: [u8; 2], // 전체 크기가 4의 배수가 되도록
 }
 ```
 
-or maybe:
+요 아래처럼요.
 
 ```rust
 struct A {
@@ -64,10 +61,9 @@ struct A {
 }
 ```
 
-There is *no indirection* for these types; all data is stored within the struct,
-as you would expect in C. However with the exception of arrays (which are
-densely packed and in-order), the layout of data is not specified by default.
-Given the two following struct definitions:
+위 타입엔 *왜곡이 없습니다*. 모든 데이터는 C에서 기대하는 것처럼 구조체 안에
+저장됩니다. 하지만 (순서대로 꽉꽉 압축된) 배열의 경우 데이터 레이아웃이
+기본적으로 지정되어 있지 않습니다. 다음 두 구조체 정의가 있다고 할 때
 
 ```rust
 struct A {
@@ -81,15 +77,14 @@ struct B {
 }
 ```
 
-Rust *does* guarantee that two instances of A have their data laid out in
-exactly the same way. However Rust *does not* currently guarantee that an
-instance of A has the same field ordering or padding as an instance of B.
+Rust는 두 A 타입 인스턴스가 정확히 같은 데이터 배열을 가지는 걸 *보장*합니다.
+하지만 현재로썬 A 타입 인스턴스가 B 타입 인스턴스와 같은 필드 순서와 패딩을
+가지는 지는 *보장하지 않습니다*.
 
-With A and B as written, this point would seem to be pedantic, but several other
-features of Rust make it desirable for the language to play with data layout in
-complex ways.
+위에 나온 A와 B대로라면, 이 점은 깐깐하게 보일 겁니다. 하지만 Rust의 몇몇 기능이
+언어 차원에서 데이터 레이아웃을 복잡하게 다루는 걸 바람직하게 만듭니다.
 
-For instance, consider this struct:
+예를 들어, 아래 구조체를 봅시다.
 
 ```rust
 struct Foo<T, U> {
@@ -99,10 +94,9 @@ struct Foo<T, U> {
 }
 ```
 
-Now consider the monomorphizations of `Foo<u32, u16>` and `Foo<u16, u32>`. If
-Rust lays out the fields in the order specified, we expect it to pad the
-values in the struct to satisfy their alignment requirements. So if Rust
-didn't reorder fields, we would expect it to produce the following:
+`Foo<u32, u16>`와 `Foo<u16, u32>`로의 구체화를 생각해봅시다. 보통 Rust가 필드를
+순서대로 배열할 때 구조체 정렬을 하길 기대할 겁니다. Rust가 필드를 재배열하지
+않는다면 아래 결과를 기대할 수밖에 없습니다.
 
 ```rust,ignore
 struct Foo<u16, u32> {
@@ -120,10 +114,10 @@ struct Foo<u32, u16> {
 }
 ```
 
-The latter case quite simply wastes space. An optimal use of space
-requires different monomorphizations to have *different field orderings*.
+후자는 그냥 공간 낭비일 뿐입니다. 이 낭비를 막으려면 서로 다른 구체화 각각이
+*필드 순서가 달라*도 되도록 해야합니다.
 
-Enums make this consideration even more complicated. Naively, an enum such as:
+열거형은 더 까다롭습니다. 간단한 아래 열거형도
 
 ```rust
 enum Foo {
@@ -133,31 +127,28 @@ enum Foo {
 }
 ```
 
-might be laid out as:
+아래처럼 바뀔 겁니다.
 
 ```rust
 struct FooRepr {
-    data: u64, // this is either a u64, u32, or u8 based on `tag`
+    data: u64, // `tag`에 따라서 u64, u32, u8 중 하나가 될 수 있다.
     tag: u8,   // 0 = A, 1 = B, 2 = C
 }
 ```
 
-And indeed this is approximately how it would be laid out (modulo the
-size and position of `tag`).
+그리고 실제로 데이터의 크기를 모듈로로 구하는 것과 `tag`의 위치면에서
+대략 위와같이 바뀝니다.
 
-However there are several cases where such a representation is inefficient. The
-classic case of this is Rust's "null pointer optimization": an enum consisting
-of a single outer unit variant (e.g. `None`) and a (potentially nested) non-
-nullable pointer variant (e.g. `Some(&T)`) makes the tag unnecessary. A null
-pointer can safely be interpreted as the unit (`None`) variant. The net
-result is that, for example, `size_of::<Option<&T>>() == size_of::<&T>()`.
+하지만 이 방식이 비효율적일 때가 있습니다. 대표적인 예는 Rust의 "널 포인터
+최적화"입니다. `None` 같은 단일 값과 (중첩 가능한) 널이 될 수 없는 포인터
+비스무리한 것들(예: `Some(&T)`)로 구성된 열거형은 태그가 필요하지 않습니다.
+널 포인터 값을 `None` 같은 단일 값 대신 쓰면 되기 때문입니다. 그렇게 되면
+`size_of::<Option<&T>>() == size_of::<&T>()`가 가능합니다.
 
-There are many types in Rust that are, or contain, non-nullable pointers such as
-`Box<T>`, `Vec<T>`, `String`, `&T`, and `&mut T`. Similarly, one can imagine
-nested enums pooling their tags into a single discriminant, as they are by
-definition known to have a limited range of valid values. In principle enums could
-use fairly elaborate algorithms to store bits throughout nested types with
-forbidden values. As such it is *especially* desirable that
-we leave enum layout unspecified today.
+Rust엔 `Box<T>`, `Vec<T>`, `String`, `&T`, `&mut T`같은 널이 될 수 없는 포인터를
+포함한 타입이 많습니다. 위와 같이 열거형에서 태그 대신 제한된 값 범위를 활용해
+판별 요소 하나로 합치는 발상을 할 수 있습니다. 원칙상 열거형은 최적화한
+레이아웃에 태그를 숨기고 가져오는 알고리즘을 사용할 수 있습니다. 그런 이유로
+열거형의 레이아웃을 명시하지 않는 것이 바람직합니다.
 
 [dst]: exotic-sizes.html#dynamically-sized-types-dsts
